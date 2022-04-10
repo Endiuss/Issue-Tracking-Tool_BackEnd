@@ -3,6 +3,7 @@ package Issue.Tracking.Tool.LoginSessionPoint.Service;
 import Issue.Tracking.Tool.LoginSessionPoint.Domain.APIUser;
 import Issue.Tracking.Tool.LoginSessionPoint.Domain.Role;
 
+
 import java.util.List;
 
 public interface UserService {
@@ -11,4 +12,8 @@ public interface UserService {
     void addRoleToUser(String username, String roleName );
     APIUser getUser(String username);
     List<APIUser> getUsers();   //load n amount
+
+    //List<Role> getRoles();
+    List <Role> getALLRoles();
+    //APIUser returnThis();
 }

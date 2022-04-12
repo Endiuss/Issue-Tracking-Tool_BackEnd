@@ -2,7 +2,7 @@ package Issue.Tracking.Tool.LoginSessionPoint.Api;
 
 import Issue.Tracking.Tool.LoginSessionPoint.Domain.APIUser;
 import Issue.Tracking.Tool.LoginSessionPoint.Domain.Role;
-import Issue.Tracking.Tool.LoginSessionPoint.Service.UserService;
+import Issue.Tracking.Tool.LoginSessionPoint.Service.SecurityService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -10,8 +10,10 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -31,38 +33,72 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.ResponseEntity.created;
 
-@RestController
-@RequestMapping(path = "/LoginSessionPoint")
+@Controller
+//@RequestMapping(path = "/LoginSessionPoint")
 @RequiredArgsConstructor
 public class UserServiceClass {
     private final  Issue.Tracking.Tool.LoginSessionPoint.Service.UserService userService;
-
-    @GetMapping("/LoginSessionPoint/user")
+    private final SecurityService securityService;
+    @ResponseBody
+    @GetMapping("/user")
     public ResponseEntity<List<APIUser>>getUsers(){
 
         return ResponseEntity.ok().body(userService.getUsers());
 
     }
 
-    @PostMapping("/LoginSessionPoint/user/save")
+
+    //testing only
+    @ResponseBody
+    @GetMapping("role")
+    public ResponseEntity<List<Role>>getALLRoles(){
+
+        return ResponseEntity.ok().body(userService.getALLRoles());
+
+    }
+
+    @GetMapping("/LoginSession")
+
+    public String LoginSession() {
+        if (securityService.isAuthenticated()) {
+            return "redirect:/user";
+        }
+        else{
+
+            return "LoginSession";
+        }
+
+    }
+
+
+
+
+    //testing only
+
+   // @GetMapping
+
+
+    //testing only
+    @ResponseBody
+    @PostMapping("user/save")
     public ResponseEntity<APIUser>saveUser(@RequestBody APIUser user) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/LoginSessionPoint/user/save").toUriString());
         return created(uri).body(userService.saveUser(user));
     }
-
-    @PostMapping("/LoginSessionPoint/role/save")
+    @ResponseBody
+    @PostMapping("role/save")
     public ResponseEntity<Role>saveRole(@RequestBody Role role) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/LoginSessionPoint/role/save").toUriString());
         return created(uri).body(userService.saveRole(role));
     }
-
-    @PostMapping("/LoginSessionPoint/role/addtouser")
+    @ResponseBody
+    @PostMapping("role/addtouser")
     public ResponseEntity<?>addRoleToUser(@RequestBody RoleToUserForm form) {
          userService.addRoleToUser(form.getUsername(), form.getRoleName());
         return ResponseEntity.ok().build();
     }
-
-    @GetMapping("/LoginSessionPoint/token/refresh")
+    @ResponseBody
+    @GetMapping("token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String authorizationHeader = request.getHeader(AUTHORIZATION); //
@@ -82,7 +118,7 @@ public class UserServiceClass {
                         .withSubject(user.getUsername())
                         .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))  // Token Expiress at 10 mins
                         .withIssuer(request.getRequestURL().toString())
-                        .withClaim("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                        .withClaim("Role", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                         .sign(algorithm);
                 Map<String, String> tokens = new HashMap<>();
 

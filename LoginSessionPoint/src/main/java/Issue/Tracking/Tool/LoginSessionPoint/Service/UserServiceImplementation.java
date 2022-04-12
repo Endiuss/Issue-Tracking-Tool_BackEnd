@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 @Service @RequiredArgsConstructor @Transactional
 @Slf4j
+
 public class UserServiceImplementation implements  UserService , UserDetailsService {
 
     private final UserRepo userRepo;
@@ -46,7 +47,6 @@ public class UserServiceImplementation implements  UserService , UserDetailsServ
         APIUser user = userRepo.findByUsername(username);
     Role role = roleRepo.findByName(roleName);
     user.getRoles().add(role);
-
     }
 
     @Override
@@ -61,6 +61,21 @@ public class UserServiceImplementation implements  UserService , UserDetailsServ
         return userRepo.findAll();
     }
 
+   /* @Override
+    public List<Role> getRoles() {
+        log.info("Getting all roles of user ");
+        return userRepo.findAllByUsername();
+    }*/
+
+    @Override
+    public List<Role> getALLRoles() {
+        log.info("Getting all roles ");
+        return roleRepo.findAll();
+    }
+
+
+
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         APIUser user = userRepo.findByUsername(username);
@@ -73,7 +88,9 @@ public class UserServiceImplementation implements  UserService , UserDetailsServ
             user.getRoles().forEach(role -> {
                 authorities.add(new SimpleGrantedAuthority(role.getName()));
             }); // look for each role to check
-            return new User(user.getUsername(), user.getPassword(), authorities);
+            UserDetails userD = User.withUsername(user.getUsername()).password(user.getPassword()).authorities(authorities).build();
+            return userD;
+
         }
     }
 }
